@@ -1,6 +1,5 @@
 package no.oxycoon.android.rebus;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -8,7 +7,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
@@ -32,6 +30,7 @@ public class RebusListViewer extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		//Maybe find a better solution than these. Actually a use for the Track-class?
 		trackNames = new ArrayList<String>();
 		trackCreator = new ArrayList<String>();
 		trackWinner = new ArrayList<String>();
