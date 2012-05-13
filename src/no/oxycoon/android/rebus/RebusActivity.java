@@ -16,8 +16,11 @@ public class RebusActivity extends Activity {
 	private MyLocationListener mll;
 	private LocationManager locationManager;
 
-	public static final int REBUSLISTVIEWER = 2;
+	public static final int REBUSLISTVIEWER = 2;	// responsecode for RebusListViewer
 
+	/**
+	 * Values for proximity alert
+	 * */
 	public static long minimum_distance_for_update = 5; // meters
 	public static long minimum_time_for_update = 5000; // milliseconds
 
@@ -28,6 +31,9 @@ public class RebusActivity extends Activity {
 	private static final long PROXY_ALERT_EXPIRATION = -1;
 
 	private static final String PROX_ALERT_INTENT = "no.oxycoon.android.rebus.ProximityAlert";
+	/**
+	 * End
+	 * */
 
 	/** Called when the activity is first created. */
 	@Override
@@ -45,13 +51,19 @@ public class RebusActivity extends Activity {
 		startRaceButton.setOnClickListener(new ButtonHandler());
 		cancelButton.setOnClickListener(new ButtonHandler());
 	}
-
+	
+	/**
+	 * Starts RebusListViewer and waits for a returned value.
+	 */
 	public void startRace() {
 		Toast.makeText(RebusActivity.this, "testing startRace()", 10).show();
 		startActivityForResult(new Intent(RebusActivity.this,
 				RebusListViewer.class), REBUSLISTVIEWER);
 	}
 
+	/**
+	 * Starts RebusMap
+	 */
 	public void startMapView() {
 		startActivity(new Intent(RebusActivity.this, RebusMap.class));
 	}
@@ -64,7 +76,10 @@ public class RebusActivity extends Activity {
 			case (REBUSLISTVIEWER): {
 				if (resultCode == Activity.RESULT_OK) {
 					if (data != null) {
-						//TODO: Start tracking given said information.
+						//TODO: Start a timer notification for time until race starts.
+						
+						
+						//TODO: Start a Proximity Alert with given data.
 					}
 				}
 			}
@@ -72,7 +87,7 @@ public class RebusActivity extends Activity {
 	}
 
 	private class ButtonHandler implements View.OnClickListener {
-
+		//TODO: Fix these cases. Will need more buttons and cases later.
 		public void onClick(View arg0) {
 			switch (arg0.getId()) {
 			case R.id.main_button_startmap:
@@ -89,6 +104,9 @@ public class RebusActivity extends Activity {
 		}
 	}
 
+	
+	//TODO: Check and possibly return position, not sure on what yet.
+	//See: http://www.firstdroid.com/2010/04/29/android-development-using-gps-to-get-current-location-2/
 	private class MyLocationListener implements LocationListener {
 		public void onLocationChanged(Location location) {
 

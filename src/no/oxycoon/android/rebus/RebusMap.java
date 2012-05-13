@@ -58,6 +58,7 @@ public class RebusMap extends MapActivity{
 //		location = locationManager.getLastKnownLocation(providerName);
 		// -------------------------------------
 
+		//TODO: Get user's current location and center map on user's location
 		controller = mapView.getController();
 		if (location != null) { //tries to get current location
 			Double tempLat = location.getLatitude();
@@ -69,6 +70,11 @@ public class RebusMap extends MapActivity{
 		}
 		controller.setCenter(point);
 		controller.setZoom(5);
+	}
+	
+	//TODO: Draw where visited posts have been. Not priority.
+	private void drawLocations(Post[] postList){
+		
 	}
 	
 	@Override
@@ -86,6 +92,8 @@ public class RebusMap extends MapActivity{
 			Double tempLat = loca.getLatitude();
 			Double tempLng = loca.getLongitude();
 
+			//TODO: Need to decide on what this method is supposed to do.
+			
 			point = new GeoPoint(tempLat.intValue(), tempLng.intValue());
 			controller.setCenter(point);
 		}
