@@ -17,6 +17,7 @@ public class RebusMap extends MapActivity{
     private Location location;
     private MapController controller;
 	private GeoPoint point;
+	private MyLocationListener mll;
     
 	private String providerName;
 	
@@ -26,6 +27,8 @@ public class RebusMap extends MapActivity{
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.rebusmap);
+		
+		mll = new MyLocationListener();
 		
 		initializeMap();
 		initializeLocation();
@@ -45,16 +48,27 @@ public class RebusMap extends MapActivity{
 		mapView.setSatellite(false);
 	}
 	
+	/**
+	 * 
+	 */
 	private void initializeLocation(){
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		providerName = LocationManager.GPS_PROVIDER;
-		location = locationManager.getLastKnownLocation(providerName);
+		providerName = LocationManager.GPS_PROVIDER;		
+		locationManager.requestLocationUpdates(providerName, 0, 0, mll);
+//		location = locationManager.getLastKnownLocation(providerName);
 		// -------------------------------------
 
 		controller = mapView.getController();
-		point = new GeoPoint(lat.intValue(), lng.intValue());
+		if (location != null) { //tries to get current location
+			Double tempLat = location.getLatitude();
+			Double tempLng = location.getLongitude();
+
+			point = new GeoPoint(tempLat.intValue(), tempLng.intValue());
+		} else { //else sets default location in Narvik, Norway.
+			point = new GeoPoint(lat.intValue(), lng.intValue());
+		}
 		controller.setCenter(point);
-		controller.setZoom(18);
+		controller.setZoom(5);
 	}
 	
 	@Override
@@ -62,5 +76,27 @@ public class RebusMap extends MapActivity{
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	/**
+	 * @author Daniel
+	 *
+	 **/
+	private class MyLocationListener implements LocationListener {
+		public void onLocationChanged(Location loca) {
+			Double tempLat = loca.getLatitude();
+			Double tempLng = loca.getLongitude();
 
+			point = new GeoPoint(tempLat.intValue(), tempLng.intValue());
+			controller.setCenter(point);
+		}
+
+		public void onStatusChanged(String s, int i, Bundle b) {
+		}
+
+		public void onProviderDisabled(String s) {
+		}
+
+		public void onProviderEnabled(String s) {
+		}
+	}
 }

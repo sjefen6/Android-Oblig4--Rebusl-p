@@ -89,7 +89,7 @@ public class RebusActivity extends Activity {
 		}
 	}
 
-	public class MyLocationListener implements LocationListener {
+	private class MyLocationListener implements LocationListener {
 		public void onLocationChanged(Location location) {
 
 		}
