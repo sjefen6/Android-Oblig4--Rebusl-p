@@ -19,7 +19,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/main_button_startrace"/>
-        <Button 
+    <Button 
+        android:id="@+id/main_button_finishedrace"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/main_button_finishedrace"/>
+    <Button 
         android:id="@+id/main_button_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

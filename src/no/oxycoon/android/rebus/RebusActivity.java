@@ -15,8 +15,11 @@ public class RebusActivity extends Activity {
 
 	private MyLocationListener mll;
 	private LocationManager locationManager;
-
-	public static final int REBUSLISTVIEWER = 2;	// responsecode for RebusListViewer
+	
+	private boolean activeRebus;
+	
+	public static final int SELECT_AVAILABLE_RACES = 1;	// responsecode for RebusListViewer 
+	public static final int SELECT_FINISHED_RACES = 2; // responsecode for RebusListViewer
 
 	/**
 	 * Values for proximity alert
@@ -55,10 +58,14 @@ public class RebusActivity extends Activity {
 	/**
 	 * Starts RebusListViewer and waits for a returned value.
 	 */
-	public void startRace() {
-		Toast.makeText(RebusActivity.this, "testing startRace()", 10).show();
-		startActivityForResult(new Intent(RebusActivity.this,
-				RebusListViewer.class), REBUSLISTVIEWER);
+	public void startRace(int i) {
+		if (i == SELECT_AVAILABLE_RACES){
+			startActivityForResult(new Intent(RebusActivity.this,
+				RebusListViewer.class), SELECT_AVAILABLE_RACES);
+		} else if(i == SELECT_FINISHED_RACES){
+			startActivityForResult(new Intent(RebusActivity.this,
+					RebusListViewer.class), SELECT_FINISHED_RACES);
+		}
 	}
 
 	/**
@@ -73,16 +80,34 @@ public class RebusActivity extends Activity {
 		super.onActivityResult(requestCode, resultCode, data);
 
 		switch (requestCode) {
-			case (REBUSLISTVIEWER): {
+			case SELECT_AVAILABLE_RACES: {
 				if (resultCode == Activity.RESULT_OK) {
 					if (data != null) {
 						//TODO: Start a timer notification for time until race starts.
-						
+						activeRebus = true;
 						
 						//TODO: Start a Proximity Alert with given data.
 					}
 				}
-			}
+				break;
+			} //End case SELECT_AVAILABLE_RACES
+			case SELECT_FINISHED_RACES:{
+				if (resultCode == Activity.RESULT_OK) {
+					if (data != null) {
+						//TODO: Start up RebusMap with an intent to draw circles on post locations.
+						double[] tempLng = data.getDoubleArrayExtra("longitude");
+						double[] tempLat = data.getDoubleArrayExtra("latitude");
+						
+						Intent intent = new Intent(this, RebusMap.class);
+						
+						intent.putExtra("longitude", tempLng);
+						intent.putExtra("latitude", tempLat);
+						
+						startActivity(intent);
+					}
+				}
+				break;
+			} //End case SELECT_FINISHED_RACES
 		}
 	}
 
@@ -94,7 +119,7 @@ public class RebusActivity extends Activity {
 				startMapView();
 				break;
 			case R.id.main_button_startrace:
-				startRace();
+				startRace(SELECT_AVAILABLE_RACES);
 				break;
 			case R.id.main_button_settings:
 				break;
@@ -103,13 +128,12 @@ public class RebusActivity extends Activity {
 			}
 		}
 	}
-
 	
 	//TODO: Check and possibly return position, not sure on what yet.
 	//See: http://www.firstdroid.com/2010/04/29/android-development-using-gps-to-get-current-location-2/
 	private class MyLocationListener implements LocationListener {
 		public void onLocationChanged(Location location) {
-
+			
 		}
 
 		public void onStatusChanged(String s, int i, Bundle b) {
