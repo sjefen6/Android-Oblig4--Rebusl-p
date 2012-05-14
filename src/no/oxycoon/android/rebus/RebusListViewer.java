@@ -15,7 +15,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -24,84 +26,98 @@ import android.widget.Toast;
 public class RebusListViewer extends ListActivity {
 	//private String trackList;
 
-	private ArrayList<String> trackNames, trackCreator, trackWinner;
-	private ArrayList<Integer> trackStart, trackStop;
+	private ArrayList<Track> theTrackList;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		//Maybe find a better solution than these. Actually a use for the Track-class?
-		trackNames = new ArrayList<String>();
-		trackCreator = new ArrayList<String>();
-		trackWinner = new ArrayList<String>();
-		trackStart = new ArrayList<Integer>();
-		trackStop = new ArrayList<Integer>();
+		theTrackList = new ArrayList<Track>();
 
-		// TODO: get information from server
-		readServerForTracks();
+		//TODO: get information from server
 		
 		//TODO: Fix up ArrayAdapters for view.
 	}
+	
+	private class ServerContactTask extends AsyncTask<String, String, ArrayList<Track>>{
+		private ProgressDialog pd;
 
-	/**
-	 * readServerForTracks()
-	 * 
-	 * Gets generated xml-file from server. File contains information about
-	 * available routes.
-	 **/
-	private void readServerForTracks() {
-		//TODO: Fix NullPointException that occurs in this block.
-		//TODO: Fix the parsing to give user the correct listview
-		try {
-			//TODO: See: https://github.com/narvik-studentradio/Android-Player/blob/master/src/com/nsr/podcast/Podcasts.java
-			//				From line 148.|
-			URL url = new URL("http://rdb.goldclone.no/beta.xml");
-			HttpURLConnection httpConnection = (HttpURLConnection)url.openConnection(); //NullPointer occurs here
-
-			// Needed?
-			// BufferedReader in = new BufferedReader(new
-			// InputStreamReader(url.openStream()));
+		@Override
+		protected void onPreExecute(){
 			
-			// Checks if connection is ok.
-			if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				InputStream in = httpConnection.getInputStream();
-				Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
-				
-				//This needed?
-				//doc.getDocumentElement().normalize();
-
-				NodeList nodeLst = doc.getElementsByTagName("track");
-
-				// XML-parse loop
-				for (int i = 0; i < nodeLst.getLength(); i++) {
-					Node fstNode = nodeLst.item(i);
-
-					//TODO: Finish all the parsing. Currently only making a toast for debugging.
-					if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
-						Element fstElement = (Element) fstNode;
-						// ------Gets the track name from the xml-------
-						NodeList trackNameList = fstElement.getElementsByTagName("name");
-						Element trackNameElement = (Element) trackNameList.item(0);
-						NodeList textTNList = trackNameElement.getChildNodes();
-
-						trackNames.add(textTNList.item(0).getNodeValue());
-
-						Toast.makeText(this, textTNList.item(0).getNodeValue(),	5).show();
-						// ---------------------
-					}
-				}	
-			}
-		} catch (MalformedURLException e) {
-			Toast.makeText(this, "URL error: " + e.getMessage(), 10).show();
-			return;
-		} catch (IOException e) {
-			Toast.makeText(this, "IO error: " + e.getMessage(), 10).show();
-			return;
-		} catch (Exception e) {
-			Toast.makeText(this, "Error: " + e.getMessage() + "\n", 10).show();
-			return;
 		}
+		
+		@Override
+		protected void onProgressUpdate(String... values){
+			
+		}
+		
+		/**
+		 * doInBackground()
+		 * 
+		 * Gets generated xml-file from server. File contains information about
+		 * available routes.
+		 **/
+		@Override
+		protected ArrayList<Track> doInBackground(String... params) {
+
+			
+		
+				//TODO: Fix NullPointException that occurs in this block.
+				//TODO: Fix the parsing to give user the correct listview
+				try {
+					//TODO: See: https://github.com/narvik-studentradio/Android-Player/blob/master/src/com/nsr/podcast/Podcasts.java
+					//				From line 148.|
+					URL url = new URL("http://rdb.goldclone.no/beta.xml");
+					//URL url = new URL("http://earthquake.usgs.gov/eqcenter/catalogs/1day-M2.5.xml");
+					HttpURLConnection httpConnection = (HttpURLConnection)url.openConnection(); //NullPointer occurs here
+
+					// Needed?
+					// BufferedReader in = new BufferedReader(new
+					// InputStreamReader(url.openStream()));
+					
+					// Checks if connection is ok.
+//					if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+						InputStream in = httpConnection.getInputStream();
+						Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
+						
+						//This needed?
+						//doc.getDocumentElement().normalize();
+
+						NodeList nodeLst = doc.getElementsByTagName("track");
+
+						// XML-parse loop
+						for (int i = 0; i < nodeLst.getLength(); i++) {
+							Node fstNode = nodeLst.item(i);
+
+							//TODO: Finish all the parsing. Currently only making a toast for debugging.
+							if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
+								Element fstElement = (Element) fstNode;
+								// ------Gets the track name from the xml-------
+								NodeList trackNameList = fstElement.getElementsByTagName("name");
+								Element trackNameElement = (Element) trackNameList.item(0);
+								NodeList textTNList = trackNameElement.getChildNodes();
+
+
+								Toast.makeText(RebusListViewer.this, textTNList.item(0).getNodeValue(),	5).show();
+								// ---------------------
+							}
+						}	
+//					}
+				} catch (MalformedURLException e) {
+					Toast.makeText(RebusListViewer.this, "URL error: " + e.getMessage(), 10).show();
+				} catch (IOException e) {
+					Toast.makeText(RebusListViewer.this, "IO error: " + e.getMessage(), 10).show();
+				} catch (Exception e) {
+					Toast.makeText(RebusListViewer.this, "Error: " + e.getMessage() + "\n", 10).show();			
+				}
+				return null;
+			
+			
+		}
+	
 	}
+	
 
 	/**
 	 * onSelect "listener". Used to return track selection

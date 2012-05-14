@@ -55,7 +55,7 @@ public class RebusMap extends MapActivity{
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		providerName = LocationManager.GPS_PROVIDER;		
 		locationManager.requestLocationUpdates(providerName, 0, 0, mll);
-//		location = locationManager.getLastKnownLocation(providerName);
+		location = locationManager.getLastKnownLocation(providerName);
 		// -------------------------------------
 
 		//TODO: Get user's current location and center map on user's location
@@ -89,8 +89,8 @@ public class RebusMap extends MapActivity{
 	 **/
 	private class MyLocationListener implements LocationListener {
 		public void onLocationChanged(Location loca) {
-			Double tempLat = loca.getLatitude();
-			Double tempLng = loca.getLongitude();
+			Double tempLat = loca.getLatitude() * 1E6;
+			Double tempLng = loca.getLongitude() * 1E6;
 
 			//TODO: Need to decide on what this method is supposed to do.
 			
