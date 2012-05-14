@@ -32,6 +32,12 @@ public class RebusMap extends MapActivity{
 		
 		initializeMap();
 		initializeLocation();
+		
+		
+		Bundle extras = getIntent().getExtras();
+		if (extras != null){
+			Toast.makeText(this, "This intent contains data", 5).show();
+		}
 	}
 	
 	
@@ -72,8 +78,8 @@ public class RebusMap extends MapActivity{
 		controller.setZoom(5);
 	}
 	
-	//TODO: Draw where visited posts have been. Not priority.
-	private void drawLocations(Post[] postList){
+	//TODO: Draw icons on map where posts of selected track was.
+	private void drawLocations(double[] latArray, double[] lngArray){
 		
 	}
 	

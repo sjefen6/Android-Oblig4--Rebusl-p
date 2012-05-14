@@ -31,7 +31,6 @@ public class RebusListViewer extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		//Maybe find a better solution than these. Actually a use for the Track-class?
 		theTrackList = new ArrayList<Track>();
 
 		//TODO: get information from server
