@@ -108,10 +108,8 @@ public class RebusActivity extends Activity {
 
 					Intent intent = new Intent(this, RebusMap.class);
 
-					intent.putExtra("longitude",
-							data.getDoubleArrayExtra("longitude"));
-					intent.putExtra("latitude",
-							data.getDoubleArrayExtra("latitude"));
+					intent.putExtra("longitude", data.getDoubleArrayExtra("longitude"));
+					intent.putExtra("latitude", data.getDoubleArrayExtra("latitude"));
 
 					startActivity(intent);
 				} // End if data

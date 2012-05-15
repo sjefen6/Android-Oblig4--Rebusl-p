@@ -59,8 +59,6 @@ public class RebusListViewer extends ListActivity {
 		 **/
 		@Override
 		protected ArrayList<Track> doInBackground(String... params) {
-
-			
 		
 				//TODO: Fix NullPointException that occurs in this block.
 				//TODO: Fix the parsing to give user the correct listview
@@ -111,8 +109,6 @@ public class RebusListViewer extends ListActivity {
 					Toast.makeText(RebusListViewer.this, "Error: " + e.getMessage() + "\n", 10).show();			
 				}
 				return null;
-			
-			
 		}
 	
 	}
