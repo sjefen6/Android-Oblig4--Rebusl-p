@@ -61,27 +61,6 @@ public class RebusActivity extends Activity {
 		finishedRacebutton.setOnClickListener(new ButtonHandler());
 	}
 
-	/**
-	 * Starts RebusListViewer and waits for a returned value.
-	 */
-	public void startRace(int i) {
-		if (i == SELECT_AVAILABLE_RACES) {
-			startActivityForResult(new Intent(RebusActivity.this,
-					RebusListViewer.class), SELECT_AVAILABLE_RACES);
-		} // End if SELECT_AVAILABLE_RACES
-		else if (i == SELECT_FINISHED_RACES) {
-			startActivityForResult(new Intent(RebusActivity.this,
-					RebusListViewer.class), SELECT_FINISHED_RACES);
-		} // End if SELECT_FINISHED_RACES
-	} // End startRace()
-
-	/**
-	 * Starts RebusMap
-	 */
-	public void startMapView() {
-		startActivity(new Intent(RebusActivity.this, RebusMap.class));
-	} // End startMapView()
-
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
@@ -102,10 +81,6 @@ public class RebusActivity extends Activity {
 		case SELECT_FINISHED_RACES: {
 			if (resultCode == Activity.RESULT_OK) {
 				if (data != null) {
-					// TODO: Start up RebusMap with an intent to draw circles on
-					// post locations.
-					// TODO: Test method
-
 					Intent intent = new Intent(this, RebusMap.class);
 
 					intent.putExtra("longitude", data.getDoubleArrayExtra("longitude"));
@@ -119,16 +94,24 @@ public class RebusActivity extends Activity {
 		} // End switch
 	} // End onActivityResult()
 
+	/**
+	 * @author Daniel
+	 *
+	 */
 	private class ButtonHandler implements View.OnClickListener {
-		// TODO: Fix these cases. Will need more buttons and cases later.
 		public void onClick(View arg0) {
 			switch (arg0.getId()) {
 			case R.id.main_button_startmap: {
-				startMapView();
+				Intent intent = new Intent(RebusActivity.this, RebusMap.class);
+				intent.putExtra("active", true);
+				startActivity(intent);
 				break;
 			} // End case R.id.main_button_startmap
 			case R.id.main_button_startrace: {
-				startRace(SELECT_AVAILABLE_RACES);
+				Intent intent = new Intent(RebusActivity.this, RebusListViewer.class);
+				intent.putExtra("newRace", true);
+				//TODO: Make the RebusListViewer look for the intent boolean to decide which xml to read from.
+				startActivityForResult(intent, SELECT_AVAILABLE_RACES);
 				break;
 			} // End case R.id.main_button_startrace
 			case R.id.main_button_settings: {
@@ -138,23 +121,36 @@ public class RebusActivity extends Activity {
 				break;
 			} // End case R.id.main_button_cancel
 			case R.id.main_button_finishedrace: {
-				Intent intent = new Intent(RebusActivity.this, RebusMap.class);
+				/**Real method to use.*/
+				Intent intent = new Intent(RebusActivity.this, RebusListViewer.class);
+				intent.putExtra("newRace", false);
+				//TODO: Make the RebusListViewer look for the intent boolean to decide which xml to read from.
+				startActivityForResult(intent, SELECT_FINISHED_RACES);
 				
-				intent.putExtra("longitude", new double[] { 2.2, 3.3, 2.3 });
-				intent.putExtra("latitude", new double[] { 2.2, 3.3, 2.3 });
-
-				startActivity(intent);
+				/**Test values for mapView draw*/
+//				Intent intent = new Intent(RebusActivity.this, RebusMap.class);
+//				
+//				intent.putExtra("longitude", new double[] { 2.2, 3.3, 2.3 });
+//				intent.putExtra("latitude", new double[] { 2.2, 3.3, 2.3 });
+//				intent.putExtra("active", false);
+//
+//				startActivity(intent);
+				break;
 			} // End case R.id.main_button_finishedrace
 			} // End switch
 		} // End onClick()
 	} // End class ButtonHandler
 
-	// TODO: Check and possibly return position, not sure on what yet.
-	// See:
-	// http://www.firstdroid.com/2010/04/29/android-development-using-gps-to-get-current-location-2/
+	// TODO: Check and return user's location to server.
+	/**
+	* http://www.firstdroid.com/2010/04/29/android-development-using-gps-to-get-current-location-2/
+	*/
 	private class MyLocationListener implements LocationListener {
 		public void onLocationChanged(Location location) {
-
+			double tempLat = location.getLatitude();
+			double tempLng = location.getLongitude();
+			
+			
 		}
 
 		public void onStatusChanged(String s, int i, Bundle b) {

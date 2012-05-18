@@ -34,4 +34,8 @@ public class CustomItemizedOverlay extends ItemizedOverlay
         overlays.add(overlay);
         populate();
     }
+    
+    public void clear(){
+    	overlays.clear();
+    }
 }
