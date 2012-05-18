@@ -4,11 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -20,6 +29,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -49,31 +59,32 @@ public class RebusListViewer extends ListActivity {
 		super.onCreate(savedInstanceState);
 
 		theTrackList = new ArrayList<Track>();
+		theNameList = new ArrayList<String>();
 		
 		Bundle extras = getIntent().getExtras();
 		Object retained = getLastNonConfigurationInstance();
 		
-		if (android.os.Build.VERSION.SDK_INT > 9) {
-			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-					.permitAll().build();
-			StrictMode.setThreadPolicy(policy);
-		}//End if
+//		if (android.os.Build.VERSION.SDK_INT > 9) {
+//			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+//					.permitAll().build();
+//			StrictMode.setThreadPolicy(policy);
+//		}//End if
 
-		try {
-			//theUrl = new URL("http://rdb.goldclone.no:80/api.php?target=tracks");
-			theUrl= new URL("http://oxycoon.sysrq.no/dna");
-		}//End try
-		catch (MalformedURLException e) {
-			e.printStackTrace();
-		}//End catch
-		
+		String theStringUrl = "http://rdb.goldclone.no:80/api.php?target=tracks";
+		//theUrl = new URL("http://213.166.188.87:80/api.php?target=tracks");
+		//theUrl= new URL("http://www.google.com");
 		if(extras != null){
-			activeRace = extras.getBoolean("active");
+			Log.v("Start", "RebusListViewer: onCreate - extras not null");
+			activeRace = extras.getBoolean("newRace");
 			if(retained == null){
+				Log.v("Start", "RebusListViewer: onCreate - retained is null");
 				serverContact = new ServerContactTask();
-				serverContact.execute(new String[]{theUrl.toString()});
+				Log.v("Start", "RebusListViewer: onCreate - serverContact before execute");
+				serverContact.execute(new String[]{theStringUrl});
+				Log.v("Start", "RebusListViewer: onCreate - serverContact.executed");
 			}//end if retained==null
 			else{
+				Log.v("Start", "RebusListViewer: onCreate - retained not null");
 				theTrackList =(ArrayList<Track>)retained;
 			}//end else
 		}//end if extras != null		
@@ -81,9 +92,9 @@ public class RebusListViewer extends ListActivity {
 			Toast.makeText(this, "There was an error: Unable to get extras.", 5);
 		}//end else
 
-
-		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, theNameList);
-		setListAdapter(adapter);
+		
+//		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, theNameList);
+//		setListAdapter(adapter);
 	}//End onCreate()
 
 	private class ServerContactTask extends
@@ -100,6 +111,12 @@ public class RebusListViewer extends ListActivity {
 		protected void onProgressUpdate(String... values) {
 			pd.setMessage(values[0]);
 		}//End onProgressUpdate()
+		
+		protected void onPostExecute(ArrayList<Track> result){
+			pd.dismiss();
+			adapter = new ArrayAdapter<String>(RebusListViewer.this, android.R.layout.simple_list_item_1, theNameList);
+			setListAdapter(adapter);
+		}
 
 		/**
 		 * doInBackground()
@@ -109,25 +126,23 @@ public class RebusListViewer extends ListActivity {
 		 **/
 		@Override
 		protected ArrayList<Track> doInBackground(String... params) {
+			Log.v("http", "RebusListViewer: doInBackground");
 			try {
-				// TODO: Fix the connection between server and client
-				// https://github.com/narvik-studentradio/Android-Player/blob/master/src/com/nsr/podcast/Podcasts.java
-				// From line 148.|
-				theUrl = new URL (params[0]);
-				//theUrl = new URL("http://earthquake.usgs.gov/eqcenter/catalogs/1day-M2.5.xml");
-				HttpURLConnection httpConnection = (HttpURLConnection)theUrl.openConnection(); 
-				int response = httpConnection.getResponseCode();
+				HttpParams httpParams = new BasicHttpParams();
+				HttpConnectionParams.setSoTimeout(httpParams, 30000);
+				
+				HttpClient theClient = new DefaultHttpClient(httpParams);
+				
+				HttpGet method = new HttpGet(new URI(params[0]));
+				
+				HttpResponse response = theClient.execute(method);
+				Log.v("http", "HttpResponse executed, response: ");
 
-				// Checks if connection is ok.
-				// NullPointer occurs here
-				if (response == HttpURLConnection.HTTP_OK) {
-					Toast.makeText(RebusListViewer.this, "Kommer inn i if-løkken", 5);
-					
 					String tempName="", tempWinner="", tempCreator="";
 					long tempStart, tempStop;
 					int tempId;
 					
-					InputStream in = httpConnection.getInputStream();
+					InputStream in = response.getEntity().getContent();
 					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
 
 					NodeList nodeLst = doc.getElementsByTagName("track");
@@ -135,47 +150,63 @@ public class RebusListViewer extends ListActivity {
 					// XML-parse loop
 					for (int i = 0; i < nodeLst.getLength(); i++) {
 						Node fstNode = nodeLst.item(i);
+						Log.v("http", "RebusListViewer inside parse loop: " + i);
 
 						// TODO: Test parse
 						if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
+							Log.v("http", "RebusListViewer inside parse loop's if");
+							
 							Element fstElement = (Element) fstNode;
 							// ------Gets the track name from the xml-------
+							Log.v("parse", "Pre-Name");
 							NodeList trackNameList = fstElement.getElementsByTagName("name");
 							Element trackNameElement = (Element) trackNameList.item(0);
 							NodeList textTNList = trackNameElement.getChildNodes();
 
-							Toast.makeText(RebusListViewer.this, textTNList.item(0).getNodeValue(), 5).show(); //debug
 							tempName = textTNList.item(0).getNodeValue();
+							Log.v("parse", "Post-Name");
 							// -----------Gets track creator from xml----------
+							Log.v("parse", "Pre-creator");
 							NodeList creatorNameList = fstElement.getElementsByTagName("creator");
 							Element creatorNameElement = (Element) creatorNameList.item(0);
 							NodeList textCNList = creatorNameElement.getChildNodes();
 							
 							tempCreator = textCNList.item(0).getNodeValue();
+							Log.v("parse", "Post-creator");
 							// ----------Gets track winner from xml-----------
-							NodeList winnerNameList = fstElement.getElementsByTagName("winner");
-							Element winnerNameElement = (Element) winnerNameList.item(0);
-							NodeList textWNList = winnerNameElement.getChildNodes();
+							if(!activeRace){
+								Log.v("parse", "Pre-winner");
+								NodeList winnerNameList = fstElement.getElementsByTagName("winner");
+								Element winnerNameElement = (Element) winnerNameList.item(0);
+								NodeList textWNList = winnerNameElement.getChildNodes();
 							
-							tempWinner = textWNList.item(0).getNodeValue();
+								tempWinner = textWNList.item(0).getNodeValue();
+								Log.v("parse", "Post-winner");
+							}
 							// ----------Gets track start time from xml-----------
+							Log.v("parse", "Pre-start");
 							NodeList startTimeList = fstElement.getElementsByTagName("start_ts");
 							Element startTimeElement = (Element) startTimeList.item(0);
 							NodeList longStartList = startTimeElement.getChildNodes();
 							
 							tempStart = Long.parseLong(longStartList.item(0).getNodeValue());
+							Log.v("parse", "Post-start");
 							// ----------Gets track stop time from xml-----------
+							Log.v("parse", "Pre-stop");
 							NodeList stopTimeList = fstElement.getElementsByTagName("start_ts");
 							Element stopTimeElement = (Element) stopTimeList.item(0);
 							NodeList longStopList = stopTimeElement.getChildNodes();
 							
 							tempStop = Long.parseLong(longStopList.item(0).getNodeValue());
+							Log.v("parse", "Post-stop");
 							// ----------Gets track id from xml--------------
+							Log.v("parse", "Pre-id");
 							NodeList idList = fstElement.getElementsByTagName("id");
 							Element idElement = (Element) idList.item(0);
 							NodeList intIdList = idElement.getChildNodes();
 							
 							tempId = Integer.parseInt(intIdList.item(0).getNodeValue());
+							Log.v("parse", "Post-id");
 							// ------------------------------------------------------
 							
 							//Checks if the user is looking for a race to sign up for or a finished race.
@@ -190,7 +221,6 @@ public class RebusListViewer extends ListActivity {
 							
 						}//End if
 					}//End for i < nodeLst.getLength()
-				}//End if httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK
 			}//End try 
 			catch (MalformedURLException e) {
 				Toast.makeText(RebusListViewer.this,
@@ -204,7 +234,8 @@ public class RebusListViewer extends ListActivity {
 				Toast.makeText(RebusListViewer.this,
 						"Error: " + e.getMessage() + "\n", 10).show();
 			}//End catch
-			return null;
+			
+			return theTrackList;
 		}//end doInBackground()
 	}//end class ServerContactTask
 

@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import android.content.*;
 import android.widget.*;
+import android.util.Log;
 import android.view.*;
 
 public class RebusActivity extends Activity {
@@ -59,12 +60,14 @@ public class RebusActivity extends Activity {
 		startRaceButton.setOnClickListener(new ButtonHandler());
 		cancelButton.setOnClickListener(new ButtonHandler());
 		finishedRacebutton.setOnClickListener(new ButtonHandler());
+		
+		activeRebus = false;
 	}
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-
+		Log.v("Start", "RebusActivity: ActivityResult: " + requestCode);
 		switch (requestCode) {
 		case SELECT_AVAILABLE_RACES: {
 			if (resultCode == Activity.RESULT_OK) {
@@ -103,15 +106,18 @@ public class RebusActivity extends Activity {
 			switch (arg0.getId()) {
 			case R.id.main_button_startmap: {
 				Intent intent = new Intent(RebusActivity.this, RebusMap.class);
-				intent.putExtra("active", true);
+				intent.putExtra("active", activeRebus);
 				startActivity(intent);
 				break;
 			} // End case R.id.main_button_startmap
 			case R.id.main_button_startrace: {
+				Log.v("Start", "RebusActivity");
 				Intent intent = new Intent(RebusActivity.this, RebusListViewer.class);
 				intent.putExtra("newRace", true);
+				Log.v("Start", "RebusActivity: Before startActivity");
 				//TODO: Make the RebusListViewer look for the intent boolean to decide which xml to read from.
 				startActivityForResult(intent, SELECT_AVAILABLE_RACES);
+				Log.v("Start", "RebusActivity: After startActivity");
 				break;
 			} // End case R.id.main_button_startrace
 			case R.id.main_button_settings: {
