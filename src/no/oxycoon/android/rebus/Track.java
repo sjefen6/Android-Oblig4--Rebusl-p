@@ -2,7 +2,7 @@ package no.oxycoon.android.rebus;
 
 //TODO: Kanskje ubrukelig
 public class Track {
-	private int id;
+	private int id, postCount;
 	private String trackName, winner, creator;
 	private long start_ts, stop_ts;
 	
