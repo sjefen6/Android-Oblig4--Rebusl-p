@@ -21,6 +21,7 @@ import com.google.android.maps.MapView.LayoutParams;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.app.ProgressDialog;
@@ -65,13 +66,14 @@ public class RebusMap extends MapActivity {
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			activeRebus = extras.getBoolean("active");
-			
-			if (extras.getDoubleArray("latitude").length > 0) {
-				drawLocations(extras.getDoubleArray("latitude"),
-						extras.getDoubleArray("longitude"));
+			if (extras.getDoubleArray("latitude") != null) {
+				if (extras.getDoubleArray("latitude").length > 0) {
+					drawLocations(extras.getDoubleArray("latitude"),
+							extras.getDoubleArray("longitude"));
+				}
 			}// End if extras.getDoubleArray("latitude").length > 0
 		}// End if extras != null
-
+		
 	}// End onCreate()
 
 	/**
@@ -170,7 +172,6 @@ public class RebusMap extends MapActivity {
 	/**
 	 * @author Daniel
 	 **/
-	//TODO: Test this
 	private class MyLocationListener implements LocationListener {
 		public void onLocationChanged(Location loca) {
 			if (activeRebus) {
@@ -178,9 +179,16 @@ public class RebusMap extends MapActivity {
 				Double tempLng = loca.getLongitude() * 1E6;
 
 				point = new GeoPoint(tempLat.intValue(), tempLng.intValue());
+				
+				if(mapOverlays.contains(userOverlay)){
+					mapOverlays.remove(userOverlay);
+				}
+				
 				userOverlay.clear();
 				userOverlay.addOverlay(new OverlayItem(point, "You", ""));
-
+				
+				mapOverlays.add(userOverlay);
+				
 				mapView.invalidate();
 				
 				controller.setCenter(point);

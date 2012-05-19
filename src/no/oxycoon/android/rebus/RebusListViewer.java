@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -25,12 +26,16 @@ import org.w3c.dom.NodeList;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -54,6 +59,7 @@ public class RebusListViewer extends ListActivity {
 	private TextView popup_name, popup_posts, popup_time;
 	private Button popup_cancel, popup_confirm;
 	private PopupWindow pw;
+	private int selectedItem;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -70,21 +76,16 @@ public class RebusListViewer extends ListActivity {
 //			StrictMode.setThreadPolicy(policy);
 //		}//End if
 
-		String theStringUrl = "http://rdb.goldclone.no:80/api.php?target=tracks";
+		String theStringUrl = "http://rdb.goldclone.no/?format=xml&target=tracks";
 		//theUrl = new URL("http://213.166.188.87:80/api.php?target=tracks");
 		//theUrl= new URL("http://www.google.com");
 		if(extras != null){
-			Log.v("Start", "RebusListViewer: onCreate - extras not null");
 			activeRace = extras.getBoolean("newRace");
 			if(retained == null){
-				Log.v("Start", "RebusListViewer: onCreate - retained is null");
 				serverContact = new ServerContactTask();
-				Log.v("Start", "RebusListViewer: onCreate - serverContact before execute");
 				serverContact.execute(new String[]{theStringUrl});
-				Log.v("Start", "RebusListViewer: onCreate - serverContact.executed");
 			}//end if retained==null
 			else{
-				Log.v("Start", "RebusListViewer: onCreate - retained not null");
 				theTrackList =(ArrayList<Track>)retained;
 			}//end else
 		}//end if extras != null		
@@ -97,8 +98,7 @@ public class RebusListViewer extends ListActivity {
 //		setListAdapter(adapter);
 	}//End onCreate()
 
-	private class ServerContactTask extends
-			AsyncTask<String, String, ArrayList<Track>> {
+	private class ServerContactTask extends	AsyncTask<String, String, ArrayList<Track>> {
 		private ProgressDialog pd;
 
 		@Override
@@ -126,7 +126,6 @@ public class RebusListViewer extends ListActivity {
 		 **/
 		@Override
 		protected ArrayList<Track> doInBackground(String... params) {
-			Log.v("http", "RebusListViewer: doInBackground");
 			try {
 				HttpParams httpParams = new BasicHttpParams();
 				HttpConnectionParams.setSoTimeout(httpParams, 30000);
@@ -136,7 +135,6 @@ public class RebusListViewer extends ListActivity {
 				HttpGet method = new HttpGet(new URI(params[0]));
 				
 				HttpResponse response = theClient.execute(method);
-				Log.v("http", "HttpResponse executed, response: ");
 
 					String tempName="", tempWinner="", tempCreator="";
 					long tempStart, tempStop;
@@ -150,67 +148,54 @@ public class RebusListViewer extends ListActivity {
 					// XML-parse loop
 					for (int i = 0; i < nodeLst.getLength(); i++) {
 						Node fstNode = nodeLst.item(i);
-						Log.v("http", "RebusListViewer inside parse loop: " + i);
 
-						// TODO: Test parse
 						if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
-							Log.v("http", "RebusListViewer inside parse loop's if");
-							
 							Element fstElement = (Element) fstNode;
 							// ------Gets the track name from the xml-------
-							Log.v("parse", "Pre-Name");
 							NodeList trackNameList = fstElement.getElementsByTagName("name");
 							Element trackNameElement = (Element) trackNameList.item(0);
 							NodeList textTNList = trackNameElement.getChildNodes();
 
 							tempName = textTNList.item(0).getNodeValue();
-							Log.v("parse", "Post-Name");
 							// -----------Gets track creator from xml----------
-							Log.v("parse", "Pre-creator");
 							NodeList creatorNameList = fstElement.getElementsByTagName("creator");
 							Element creatorNameElement = (Element) creatorNameList.item(0);
 							NodeList textCNList = creatorNameElement.getChildNodes();
 							
 							tempCreator = textCNList.item(0).getNodeValue();
-							Log.v("parse", "Post-creator");
 							// ----------Gets track winner from xml-----------
-							if(!activeRace){
-								Log.v("parse", "Pre-winner");
+							try{
 								NodeList winnerNameList = fstElement.getElementsByTagName("winner");
 								Element winnerNameElement = (Element) winnerNameList.item(0);
-								NodeList textWNList = winnerNameElement.getChildNodes();
-							
+								NodeList textWNList = winnerNameElement.getChildNodes();			
+								
 								tempWinner = textWNList.item(0).getNodeValue();
-								Log.v("parse", "Post-winner");
+							}
+							catch(NullPointerException e){
+								tempWinner = "No winner registered";
 							}
 							// ----------Gets track start time from xml-----------
-							Log.v("parse", "Pre-start");
 							NodeList startTimeList = fstElement.getElementsByTagName("start_ts");
 							Element startTimeElement = (Element) startTimeList.item(0);
 							NodeList longStartList = startTimeElement.getChildNodes();
 							
 							tempStart = Long.parseLong(longStartList.item(0).getNodeValue());
-							Log.v("parse", "Post-start");
 							// ----------Gets track stop time from xml-----------
-							Log.v("parse", "Pre-stop");
 							NodeList stopTimeList = fstElement.getElementsByTagName("start_ts");
 							Element stopTimeElement = (Element) stopTimeList.item(0);
 							NodeList longStopList = stopTimeElement.getChildNodes();
 							
 							tempStop = Long.parseLong(longStopList.item(0).getNodeValue());
-							Log.v("parse", "Post-stop");
 							// ----------Gets track id from xml--------------
-							Log.v("parse", "Pre-id");
 							NodeList idList = fstElement.getElementsByTagName("id");
 							Element idElement = (Element) idList.item(0);
 							NodeList intIdList = idElement.getChildNodes();
 							
 							tempId = Integer.parseInt(intIdList.item(0).getNodeValue());
-							Log.v("parse", "Post-id");
 							// ------------------------------------------------------
 							
 							//Checks if the user is looking for a race to sign up for or a finished race.
-							if(activeRace && tempStart > (System.currentTimeMillis() / 1000L)){
+							if(activeRace && tempStop > (System.currentTimeMillis() / 1000L)){
 								theTrackList.add(new Track(tempId, tempName, tempCreator, tempStart, tempStop));
 								theNameList.add(tempName);
 							}//end if activeRace && tempStart > (System.currentTimeMillis() / 1000L
@@ -245,16 +230,69 @@ public class RebusListViewer extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-
-		String s = (String) this.getListAdapter().getItem(position);
-		Intent result = new Intent();
+		selectedItem = position;
 		
-		
-		// TODO: give detailed information about selected race
+		try{
+            LayoutInflater inflater = (LayoutInflater) RebusListViewer.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View layout = inflater.inflate(R.layout.viewerpopup1, (ViewGroup) findViewById(R.id.popup1_element));
+            pw = new PopupWindow(layout, 300, 470, true);
+            pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
-		// TODO: return race to follow
-		result.putExtra("returnResult", s);
-		setResult(RESULT_OK, result);
-		finish();
+            popup_name = (TextView) layout.findViewById(R.id.popup1_title);
+            popup_time = (TextView) layout.findViewById(R.id.popup1_time);
+            
+            popup_name.setText(theTrackList.get(position).Name() + " by " +theTrackList.get(position).Creator());
+
+            if(activeRace){
+            	Date start = new Date((long) theTrackList.get(position).Start_ts()*1000);
+            	Date stop = new Date((long) theTrackList.get(position).Stop_ts()*1000);
+            	popup_time.setText("Race starts at: " + start + " and ends at: " + stop);
+            }
+            else if(!activeRace){
+            	popup_time.setText("This race's winner was: " + theTrackList.get(position).Winner());
+            }
+            
+            popup_confirm = (Button) layout.findViewById(R.id.popup1_button_signup);
+            popup_cancel = (Button) layout.findViewById(R.id.popup1_button_cancel);
+
+            popup_confirm.setOnClickListener(new MyButtonHandler());
+            popup_cancel.setOnClickListener(new MyButtonHandler());
+		}//end try
+		catch(Exception e){
+			;
+		}//end catch
 	}//End onListItemClick()
+	
+	private class MyButtonHandler implements View.OnClickListener{
+		public void onClick(View arg0) {
+			switch(arg0.getId()){
+			case R.id.popup1_button_cancel:{
+				pw.dismiss();
+				break;
+			}//end case R.id.popup1_button_cancel
+			case R.id.popup1_button_signup:{
+				Intent result = new Intent();
+				result.putExtra("returnResult", theTrackList.get(selectedItem).getStringArray());
+				setResult(RESULT_OK, result);
+				
+//				try{
+//					
+//					String tempUrl = "http://rdb.goldclone.no/?format=xml&" +
+//							"action=join&track="+theTrackList.get(selectedItem).Id()+"&username="; //TODO:
+//					HttpParams httpParams = new BasicHttpParams();
+//					HttpConnectionParams.setSoTimeout(httpParams, 30000);
+//				
+//					HttpClient theClient = new DefaultHttpClient(httpParams);
+//				
+//					HttpGet method = new HttpGet(new URI(tempUrl));
+//				
+//					HttpResponse response = theClient.execute(method);
+//				}catch(Exception e){;}
+				
+				finish();				
+				break;
+			}//end case R.id.popup1_button_signup
+			}//end switch
+		}//end onClick
+	}//end class myButtonHandler
 }

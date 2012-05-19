@@ -1,6 +1,5 @@
 package no.oxycoon.android.rebus;
 
-//TODO: Kanskje ubrukelig
 public class Track {
 	private int id, postCount;
 	private String trackName, winner, creator;
@@ -67,4 +66,8 @@ public class Track {
 	 * @return
 	 */
 	public long Stop_ts(){ return stop_ts; }
+	
+	public String[] getStringArray(){
+		return new String[] {id+"",trackName,creator,start_ts+"",stop_ts+"",winner+""};
+	}
 }
