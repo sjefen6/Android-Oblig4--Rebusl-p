@@ -2,7 +2,7 @@ package no.oxycoon.android.rebus;
 
 import android.location.Location;
 
-//TODO
+//TODO: Make use of class to draw opponent's locations. Currently unimplemented class
 public class UserData {
 	private double lat, lng;
 	
