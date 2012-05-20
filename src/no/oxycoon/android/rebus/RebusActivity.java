@@ -138,13 +138,7 @@ public class RebusActivity extends Activity {
 					String[] stringTemp = data.getStringArrayExtra("returnResult");
 					
 					currentTrack = new Track(Integer.parseInt(stringTemp[0]), stringTemp[1], stringTemp[2], Long.parseLong(stringTemp[3]), Long.parseLong(stringTemp[4]));
-					
-					//AlarmManager am = AlarmManager
-					
-					
-					
 
-					// TODO: Start a Proximity Alert with given data.
 				} // End if data
 			} // End if resultCode
 			break;
@@ -204,7 +198,6 @@ public class RebusActivity extends Activity {
 		} // End onClick()
 	} // End class ButtonHandler
 
-	// TODO: Check and return user's location to server.
 	/**
 	* http://www.firstdroid.com/2010/04/29/android-development-using-gps-to-get-current-location-2/
 	*/
