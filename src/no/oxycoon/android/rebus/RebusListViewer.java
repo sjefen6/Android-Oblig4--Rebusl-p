@@ -49,6 +49,7 @@ public class RebusListViewer extends ListActivity {
 	private boolean activeRace;
 	
 	private ServerContactTask serverContact = null;
+	private ServerSendTask serverSend = null;
 
 	private ArrayList<Track> theTrackList;
 	private ArrayList<String> theNameList;
@@ -60,6 +61,8 @@ public class RebusListViewer extends ListActivity {
 	private Button popup_cancel, popup_confirm;
 	private PopupWindow pw;
 	private int selectedItem;
+	
+	private String uname, upwd;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -81,6 +84,12 @@ public class RebusListViewer extends ListActivity {
 		//theUrl= new URL("http://www.google.com");
 		if(extras != null){
 			activeRace = extras.getBoolean("newRace");
+			
+			if(activeRace){
+				uname = extras.getString("username");
+				upwd = extras.getString("password");
+			}
+			
 			if(retained == null){
 				serverContact = new ServerContactTask();
 				serverContact.execute(new String[]{theStringUrl});
@@ -181,7 +190,7 @@ public class RebusListViewer extends ListActivity {
 							
 							tempStart = Long.parseLong(longStartList.item(0).getNodeValue());
 							// ----------Gets track stop time from xml-----------
-							NodeList stopTimeList = fstElement.getElementsByTagName("start_ts");
+							NodeList stopTimeList = fstElement.getElementsByTagName("stop_ts");
 							Element stopTimeElement = (Element) stopTimeList.item(0);
 							NodeList longStopList = stopTimeElement.getChildNodes();
 							
@@ -263,6 +272,52 @@ public class RebusListViewer extends ListActivity {
 		}//end catch
 	}//End onListItemClick()
 	
+	private class ServerSendTask extends AsyncTask<String, String, Boolean> {
+		private ProgressDialog pd;
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			pd = ProgressDialog.show(RebusListViewer.this, "Please wait.", "Registering signup.", true, false);
+		}//End onPreExecute()
+
+		@Override
+		protected void onProgressUpdate(String... values) {
+			pd.setMessage(values[0]);
+		}//End onProgressUpdate()
+		
+		protected void onPostExecute(boolean result){
+			pd.dismiss();
+		}
+
+		/**
+		 * doInBackground()
+		 * 
+		 * Gets generated xml-file from server. File contains information about
+		 * available routes.
+		 **/
+		@Override
+		protected Boolean doInBackground(String... params) {
+			try{
+				
+				
+				HttpParams httpParams = new BasicHttpParams();
+				HttpConnectionParams.setSoTimeout(httpParams, 30000);
+			
+				HttpClient theClient = new DefaultHttpClient(httpParams);
+			
+				HttpGet method = new HttpGet(new URI(params[0]));
+				
+				theClient.execute(method);
+				Log.v("http", "track joined");
+			}
+			catch(Exception e){
+				Log.v("http", "track join failed");
+			}
+			return true;
+		}//end doInBackground()
+	}//end class ServerContactTask
+	
 	private class MyButtonHandler implements View.OnClickListener{
 		public void onClick(View arg0) {
 			switch(arg0.getId()){
@@ -275,19 +330,11 @@ public class RebusListViewer extends ListActivity {
 				result.putExtra("returnResult", theTrackList.get(selectedItem).getStringArray());
 				setResult(RESULT_OK, result);
 				
-//				try{
-//					
-//					String tempUrl = "http://rdb.goldclone.no/?format=xml&" +
-//							"action=join&track="+theTrackList.get(selectedItem).Id()+"&username="; //TODO:
-//					HttpParams httpParams = new BasicHttpParams();
-//					HttpConnectionParams.setSoTimeout(httpParams, 30000);
-//				
-//					HttpClient theClient = new DefaultHttpClient(httpParams);
-//				
-//					HttpGet method = new HttpGet(new URI(tempUrl));
-//				
-//					HttpResponse response = theClient.execute(method);
-//				}catch(Exception e){;}
+				String tempUrl = "http://rdb.goldclone.no/?format=xml&" +
+						"action=join&track="+theTrackList.get(selectedItem).Id()+"&username="+uname+"&password="+upwd;
+				
+				serverSend = new ServerSendTask();
+				serverSend.execute(tempUrl);
 				
 				finish();				
 				break;

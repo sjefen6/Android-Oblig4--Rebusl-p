@@ -40,6 +40,7 @@ public class RebusActivity extends Activity {
 	private ServerContactTask task;
 
 	private Boolean activeRebus;
+	private Boolean locationFound;
 
 	public static final int SELECT_AVAILABLE_RACES = 1; // responsecode for
 														// RebusListViewer
@@ -61,6 +62,9 @@ public class RebusActivity extends Activity {
 	private static final long PROXY_ALERT_EXPIRATION = -1;
 
 	private static final String PROX_ALERT_INTENT = "no.oxycoon.android.rebus.ProximityAlert";
+	
+	private double postLongitude, postLatitude, postRadius;
+	private String postClue;
 
 	/**
 	 * End
@@ -92,6 +96,9 @@ public class RebusActivity extends Activity {
 		if (activeRebus == null){
 			activeRebus = false;
 		}
+		if (locationFound == null){
+			locationFound = false;
+		}
 		
 		Bundle extras = getIntent().getExtras();
 		if(extras != null){
@@ -102,6 +109,7 @@ public class RebusActivity extends Activity {
 	
 	public void activateRebus(){
 		activeRebus = true;
+		locationFound = true;
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mll);
 	}
@@ -109,6 +117,10 @@ public class RebusActivity extends Activity {
 	public void endRebus(){
 		activeRebus = false;
 		locationManager.removeUpdates(mll);
+	}
+	
+	public void showClue(){
+		Toast.makeText(this, postClue, 10).show();
 	}
 
 	@Override
@@ -122,7 +134,6 @@ public class RebusActivity extends Activity {
 					// starts.
 					activateRebus();
 					
-					Log.v("tracking", "onActivityResult");
 					
 					String[] stringTemp = data.getStringArrayExtra("returnResult");
 					
@@ -170,6 +181,8 @@ public class RebusActivity extends Activity {
 			case R.id.main_button_startrace: {
 				Intent intent = new Intent(RebusActivity.this, RebusListViewer.class);
 				intent.putExtra("newRace", true);
+				intent.putExtra("username", uname);
+				intent.putExtra("password", upwd);
 				startActivityForResult(intent, SELECT_AVAILABLE_RACES);
 				break;
 			} // End case R.id.main_button_startrace
@@ -177,6 +190,7 @@ public class RebusActivity extends Activity {
 				break;
 			} // End case R.id.main_button_settings
 			case R.id.main_button_cancel: {
+				showClue();
 				break;
 			} // End case R.id.main_button_cancel
 			case R.id.main_button_finishedrace: {
@@ -235,7 +249,11 @@ public class RebusActivity extends Activity {
 		}//End onProgressUpdate()
 		
 		protected void onPostExecute(Boolean result){
-			
+			if(locationFound){
+				locationFound = false;
+				
+				//TODO: update a new proximity alert
+			}
 		}
 
 		/**
@@ -256,11 +274,59 @@ public class RebusActivity extends Activity {
 			catch(Exception e){
 			}//end catch
 			
-			
-			
-			
-			
-			
+			//Gets next post if user's found current post.
+			if(locationFound){
+				try {
+					String tempPostURL = "http://rdb.goldclone.no/?format=xml&target=post&username="+uname+"&password="+upwd;
+					
+					HttpParams httpParams = new BasicHttpParams();
+					HttpConnectionParams.setSoTimeout(httpParams, 30000);
+					HttpClient theClient = new DefaultHttpClient(httpParams);
+					HttpGet method = new HttpGet(new URI(tempPostURL));
+
+					HttpResponse response = theClient.execute(method);
+
+					InputStream in = response.getEntity().getContent();
+					Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(in);
+
+					NodeList nodeLst = doc.getElementsByTagName("post");
+
+					// XML-parse loop
+					for (int i = 0; i < nodeLst.getLength(); i++) {
+						Node fstNode = nodeLst.item(i);
+						if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
+							Element fstElement = (Element) fstNode;
+							// ------Gets the post radius from the xml-------
+							NodeList radiusList = fstElement.getElementsByTagName("radius");
+							Element radiusElement = (Element) radiusList.item(0);
+							NodeList textRList = radiusElement.getChildNodes();
+							
+							postRadius = Double.parseDouble(textRList.item(0).getNodeValue().toString());
+							// ------Gets the post latitude from the xml-------
+							NodeList latList = fstElement.getElementsByTagName("latitude");
+							Element latElement = (Element) latList.item(0);
+							NodeList textLatList = latElement.getChildNodes();
+
+							postLatitude = Double.parseDouble(textLatList.item(0).getNodeValue().toString());	
+							// ------Gets the post longitude from the xml-------
+							NodeList longList = fstElement.getElementsByTagName("longitude");
+							Element longElement = (Element) longList.item(0);
+							NodeList textLngList = longElement.getChildNodes();
+
+							postLongitude = Double.parseDouble(textLngList.item(0).getNodeValue().toString());
+							// ------Gets the post clue from the xml-------
+							NodeList clueList = fstElement.getElementsByTagName("clue");
+							Element clueElement = (Element) clueList.item(0);
+							NodeList textClueList = clueElement.getChildNodes();
+
+							postClue = textClueList.item(0).getNodeValue().toString();
+						}// End if
+					}// End for i < nodeLst.getLength()
+				}// End try
+				catch (Exception e) {
+
+				}// end catch
+			}//end if
 			return true;
 			
 		}//end doInBackground()
