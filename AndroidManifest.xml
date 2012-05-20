@@ -40,6 +40,7 @@
             android:name=".RebusReciever">
             <intent-filter>
                 <action android:name="no.oxycoon.android.rebus.ProximityAlert" />
+                <action android:name="no.oxycoon.android.rebus.AlarmAlert" />
             </intent-filter>
         </receiver>
         

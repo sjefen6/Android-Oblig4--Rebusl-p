@@ -19,6 +19,7 @@ import org.w3c.dom.NodeList;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.location.Location;
 import android.location.LocationListener;
@@ -46,9 +47,19 @@ public class RebusActivity extends Activity {
 														// RebusListViewer
 	public static final int SELECT_FINISHED_RACES = 2; // responsecode for
 														// RebusListViewer
+	public static final int ALARM_REQUEST_CODE = 11;
+	public static final int PROXY_REQUEST_CODE = 12;
 	
 	private Track currentTrack;
 
+	/*
+	 * Values for AlarmManager
+	 */
+	private AlarmManager am;
+	private PendingIntent pIntent;
+	
+	public static final String ALARM_ALERT_INTENT = "no.oxycoon.android.rebus.AlarmAlert";
+	
 	/**
 	 * Values for proximity alert
 	 * */
@@ -61,7 +72,7 @@ public class RebusActivity extends Activity {
 	private static final long RADIUS_FOR_POINT = 10; // meters
 	private static final long PROXY_ALERT_EXPIRATION = -1;
 
-	private static final String PROX_ALERT_INTENT = "no.oxycoon.android.rebus.ProximityAlert";
+	public static final String PROX_ALERT_INTENT = "no.oxycoon.android.rebus.ProximityAlert";
 	
 	private double postLongitude, postLatitude, postRadius;
 	private String postClue;
@@ -107,11 +118,27 @@ public class RebusActivity extends Activity {
 		}
 	}
 	
+	//TODO: start proximity alert
 	public void activateRebus(){
 		activeRebus = true;
 		locationFound = true;
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mll);
+		
+        Intent intent = new Intent(PROX_ALERT_INTENT);
+        intent.putExtra("action", PROXY_REQUEST_CODE);
+        pIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        
+        locationManager.addProximityAlert(
+            postLatitude, // the latitude of the central point of the alert region
+            postLongitude, // the longitude of the central point of the alert region
+            (float) postRadius, // the radius of the central point of the alert region, in meters
+            PROXY_ALERT_EXPIRATION, // time for this proximity alert, in milliseconds, or -1 to indicate no expiration 
+            pIntent // will be used to generate an Intent to fire when entry to or exit from the alert region is detected
+       );
+        
+       IntentFilter filter = new IntentFilter(PROX_ALERT_INTENT);  
+       registerReceiver(new RebusReceiver(), filter);
 	}
 	
 	public void endRebus(){
@@ -121,6 +148,10 @@ public class RebusActivity extends Activity {
 	
 	public void showClue(){
 		Toast.makeText(this, postClue, 10).show();
+	}
+	
+	public void nextPost(){
+		locationFound = true;
 	}
 
 	@Override
@@ -132,13 +163,25 @@ public class RebusActivity extends Activity {
 				if (data != null) {
 					// TODO: Start a timer notification for time until race
 					// starts.
-					activateRebus();
-					
-					
 					String[] stringTemp = data.getStringArrayExtra("returnResult");
 					
 					currentTrack = new Track(Integer.parseInt(stringTemp[0]), stringTemp[1], stringTemp[2], Long.parseLong(stringTemp[3]), Long.parseLong(stringTemp[4]));
-
+					
+					if(currentTrack.Start_ts() < (System.currentTimeMillis() / 1000L)){
+						activateRebus();
+					}//End if currentTrack.Start_ts() < (System.currentTimeMillis() / 1000L)
+					else{
+						am = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+						Intent intent = new Intent();
+						intent.putExtra("alarm_message", "The race you've signed up for starts now!");
+						intent.putExtra("action", ALARM_REQUEST_CODE);
+						pIntent = PendingIntent.getBroadcast(this, ALARM_REQUEST_CODE, intent, 1);
+						
+						am.set(AlarmManager.RTC_WAKEUP, currentTrack.Start_ts(), pIntent);
+						
+					    IntentFilter filter = new IntentFilter(ALARM_ALERT_INTENT);  
+					    registerReceiver(new RebusReceiver(), filter);
+					}//End else
 				} // End if data
 			} // End if resultCode
 			break;

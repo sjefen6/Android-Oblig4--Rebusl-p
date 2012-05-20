@@ -299,8 +299,6 @@ public class RebusListViewer extends ListActivity {
 		@Override
 		protected Boolean doInBackground(String... params) {
 			try{
-				
-				
 				HttpParams httpParams = new BasicHttpParams();
 				HttpConnectionParams.setSoTimeout(httpParams, 30000);
 			
@@ -309,10 +307,8 @@ public class RebusListViewer extends ListActivity {
 				HttpGet method = new HttpGet(new URI(params[0]));
 				
 				theClient.execute(method);
-				Log.v("http", "track joined");
 			}
 			catch(Exception e){
-				Log.v("http", "track join failed");
 			}
 			return true;
 		}//end doInBackground()
