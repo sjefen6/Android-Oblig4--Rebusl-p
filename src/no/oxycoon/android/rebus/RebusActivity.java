@@ -133,20 +133,20 @@ public class RebusActivity extends Activity {
 		task = new ServerContactTask();
 		task.execute(tempUrl);
 		
-        Intent intent = new Intent(PROX_ALERT_INTENT);
-        intent.putExtra("action", PROXY_REQUEST_CODE);
-        pIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-        
-        locationManager.addProximityAlert(
-            postLatitude, // the latitude of the central point of the alert region
-            postLongitude, // the longitude of the central point of the alert region
-            (float) postRadius, // the radius of the central point of the alert region, in meters
-            PROXY_ALERT_EXPIRATION, // time for this proximity alert, in milliseconds, or -1 to indicate no expiration 
-            pIntent // will be used to generate an Intent to fire when entry to or exit from the alert region is detected
-        );
-       
-        Log.v("receiver", "before registering proxyReceiver");
-        registerReceiver(new RebusReceiver(), new IntentFilter(PROX_ALERT_INTENT));
+//        Intent intent = new Intent(PROX_ALERT_INTENT);
+//        intent.putExtra("action", PROXY_REQUEST_CODE);
+//        pIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+//        
+//        locationManager.addProximityAlert(
+//            postLatitude, // the latitude of the central point of the alert region
+//            postLongitude, // the longitude of the central point of the alert region
+//            (float) postRadius, // the radius of the central point of the alert region, in meters
+//            PROXY_ALERT_EXPIRATION, // time for this proximity alert, in milliseconds, or -1 to indicate no expiration 
+//            pIntent // will be used to generate an Intent to fire when entry to or exit from the alert region is detected
+//        );
+//       
+//        Log.v("receiver", "before registering proxyReceiver");
+//        registerReceiver(new RebusReceiver(), new IntentFilter(PROX_ALERT_INTENT));
 	}
 	
 	public void endRebus(){
