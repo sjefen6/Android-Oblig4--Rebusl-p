@@ -80,7 +80,7 @@ public class LoginActivity extends Activity {
 				intent.putExtra("password", pwd);
 				startActivity(intent);
 			}else{
-				Toast.makeText(LoginActivity.this, "Login failed", 5);
+				Toast.makeText(LoginActivity.this, "Login failed", 5).show();
 			}
 		}
 

@@ -8,22 +8,30 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/hello" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/main_button_startrace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/main_button_startrace" />
+
+        <Button
+            android:id="@+id/main_button_finishedrace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/main_button_finishedrace" />
+
+    </LinearLayout>
     
     <Button 
         android:id="@+id/main_button_startmap"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/main_button_startmap"/>
-    <Button 
-        android:id="@+id/main_button_startrace"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/main_button_startrace"/>
-    <Button 
-        android:id="@+id/main_button_finishedrace"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/main_button_finishedrace"/>
     <Button 
         android:id="@+id/main_button_cancel"
         android:layout_width="wrap_content"

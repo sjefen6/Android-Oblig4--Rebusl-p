@@ -2,16 +2,16 @@
 <resources>
 
     <string name="hello">Hello World, RebusActivity!</string>
-    <string name="app_name">Android-Oblig4--Rebusl-p</string>
+    <string name="app_name">Rebus Client</string>
     
     
     
     
     <!-- Main menu strings -->
+    <string name="main_button_startrace">Join</string>
+    <string name="main_button_finishedrace">Results</string>
     <string name="main_button_startmap">Show map</string>
-    <string name="main_button_startrace">Start a race</string>
     <string name="main_button_settings">Settings</string>
     <string name="main_button_cancel">Cancel current race</string>
-    <string name="main_button_finishedrace">Finished race posts</string>
 
 </resources>
