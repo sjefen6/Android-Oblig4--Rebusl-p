@@ -143,9 +143,10 @@ public class RebusActivity extends Activity {
             (float) postRadius, // the radius of the central point of the alert region, in meters
             PROXY_ALERT_EXPIRATION, // time for this proximity alert, in milliseconds, or -1 to indicate no expiration 
             pIntent // will be used to generate an Intent to fire when entry to or exit from the alert region is detected
-       );
+        );
        
-       registerReceiver(proxyReceiver, new IntentFilter(PROX_ALERT_INTENT));
+        Log.v("receiver", "before registering proxyReceiver");
+        registerReceiver(proxyReceiver, new IntentFilter(PROX_ALERT_INTENT));
 	}
 	
 	public void endRebus(){
@@ -389,16 +390,18 @@ public class RebusActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			// TODO: Notification for post reached
-			try{
-				NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-				PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, null, 0);
-				Notification notification = createNotification();
-
-				notification.setLatestEventInfo(context, "Proximity Alert!","You have found the post!", pendingIntent);
-
-				notificationManager.notify(1000, notification);
-			}catch(Exception E){}
+			Toast.makeText(RebusActivity.this, "You've reached the post!", 5);
+			Log.v("receiver", "inside proxyReceiver");
+//			try{
+//				NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//				PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, null, 0);
+//				Notification notification = createNotification();
+//
+//				notification.setLatestEventInfo(context, "Proximity Alert!","You have found the post!", pendingIntent);
+//
+//				notificationManager.notify(1000, notification);
+//			}catch(Exception E){}
 			nextPost();
 		}
 
@@ -407,16 +410,18 @@ public class RebusActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			// TODO Notification for activated race
-			try{
-				NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-				PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, null, 0);
-				Notification notification = createNotification();
-
-				notification.setLatestEventInfo(context, "Race start!","The race you've signed up for starts now!", pendingIntent);
-
-				notificationManager.notify(1001, notification);
-			}catch(Exception E){}
+			Toast.makeText(RebusActivity.this, "Rebus is starting now!", 5);
+			Log.v("receiver", "inside alarmReceiver");
+//			try{
+//				NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//				PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, null, 0);
+//				Notification notification = createNotification();
+//
+//				notification.setLatestEventInfo(context, "Race start!","The race you've signed up for starts now!", pendingIntent);
+//
+//				notificationManager.notify(1001, notification);
+//			}catch(Exception E){}
 			activateRebus();
 		}
 	};
