@@ -309,6 +309,7 @@ public class RebusActivity extends Activity {
 			       
 			    registerReceiver(new RebusReceiver(), new IntentFilter(PROX_ALERT_INTENT));
 			}
+			task.cancel(true);
 		}
 
 		/**
