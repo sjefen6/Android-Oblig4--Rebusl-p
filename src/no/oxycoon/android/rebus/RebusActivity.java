@@ -19,6 +19,8 @@ import org.w3c.dom.NodeList;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.location.Location;
@@ -28,6 +30,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.content.*;
+import android.graphics.Color;
 import android.widget.*;
 import android.util.Log;
 import android.view.*;
@@ -386,6 +389,16 @@ public class RebusActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			// TODO: Notification for post reached
+			try{
+				NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+				PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, null, 0);
+				Notification notification = createNotification();
+
+				notification.setLatestEventInfo(context, "Proximity Alert!","You have found the post!", pendingIntent);
+
+				notificationManager.notify(1000, notification);
+			}catch(Exception E){}
 			nextPost();
 		}
 
@@ -394,7 +407,35 @@ public class RebusActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			// TODO Notification for activated race
+			try{
+				NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+				PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, null, 0);
+				Notification notification = createNotification();
+
+				notification.setLatestEventInfo(context, "Race start!","The race you've signed up for starts now!", pendingIntent);
+
+				notificationManager.notify(1001, notification);
+			}catch(Exception E){}
 			activateRebus();
 		}
 	};
+	
+	private Notification createNotification() {
+		Notification notification = new Notification();
+
+		notification.when = System.currentTimeMillis();
+
+		notification.flags |= Notification.FLAG_AUTO_CANCEL;
+		notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+
+		notification.defaults |= Notification.DEFAULT_VIBRATE;
+		notification.defaults |= Notification.DEFAULT_LIGHTS;
+
+		notification.ledARGB = Color.WHITE;
+		notification.ledOnMS = 1500;
+		notification.ledOffMS = 1500;
+
+		return notification;
+	}
 }
