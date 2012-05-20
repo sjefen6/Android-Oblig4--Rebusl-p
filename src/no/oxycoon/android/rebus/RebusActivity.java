@@ -42,7 +42,7 @@ public class RebusActivity extends Activity {
 
 	private Boolean activeRebus;
 	private Boolean locationFound;
-
+	
 	public static final int SELECT_AVAILABLE_RACES = 1; // responsecode for
 														// RebusListViewer
 	public static final int SELECT_FINISHED_RACES = 2; // responsecode for
@@ -124,6 +124,11 @@ public class RebusActivity extends Activity {
 		locationFound = true;
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mll);
+
+		String tempUrl = "http://rdb.goldclone.no/";
+		
+		task = new ServerContactTask();
+		task.execute(tempUrl);
 		
         Intent intent = new Intent(PROX_ALERT_INTENT);
         intent.putExtra("action", PROXY_REQUEST_CODE);
@@ -136,9 +141,8 @@ public class RebusActivity extends Activity {
             PROXY_ALERT_EXPIRATION, // time for this proximity alert, in milliseconds, or -1 to indicate no expiration 
             pIntent // will be used to generate an Intent to fire when entry to or exit from the alert region is detected
        );
-        
-       IntentFilter filter = new IntentFilter(PROX_ALERT_INTENT);  
-       registerReceiver(new RebusReceiver(), filter);
+       
+       registerReceiver(proxyReceiver, new IntentFilter(PROX_ALERT_INTENT));
 	}
 	
 	public void endRebus(){
@@ -161,26 +165,24 @@ public class RebusActivity extends Activity {
 		case SELECT_AVAILABLE_RACES: {
 			if (resultCode == Activity.RESULT_OK) {
 				if (data != null) {
-					// TODO: Start a timer notification for time until race
-					// starts.
 					String[] stringTemp = data.getStringArrayExtra("returnResult");
-					
 					currentTrack = new Track(Integer.parseInt(stringTemp[0]), stringTemp[1], stringTemp[2], Long.parseLong(stringTemp[3]), Long.parseLong(stringTemp[4]));
 					
 					if(currentTrack.Start_ts() < (System.currentTimeMillis() / 1000L)){
 						activateRebus();
 					}//End if currentTrack.Start_ts() < (System.currentTimeMillis() / 1000L)
 					else{
+						// TODO: Start a timer notification for time until race
+						// starts.
 						am = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
 						Intent intent = new Intent();
 						intent.putExtra("alarm_message", "The race you've signed up for starts now!");
 						intent.putExtra("action", ALARM_REQUEST_CODE);
-						pIntent = PendingIntent.getBroadcast(this, ALARM_REQUEST_CODE, intent, 1);
+						PendingIntent pIntent = PendingIntent.getBroadcast(this, ALARM_REQUEST_CODE, intent, 0);
 						
 						am.set(AlarmManager.RTC_WAKEUP, currentTrack.Start_ts(), pIntent);
 						
-					    IntentFilter filter = new IntentFilter(ALARM_ALERT_INTENT);  
-					    registerReceiver(new RebusReceiver(), filter);
+					    registerReceiver(alarmReceiver, new IntentFilter(ALARM_ALERT_INTENT));
 					}//End else
 				} // End if data
 			} // End if resultCode
@@ -231,7 +233,6 @@ public class RebusActivity extends Activity {
 				break;
 			} // End case R.id.main_button_cancel
 			case R.id.main_button_finishedrace: {
-				/**Real method to use.*/
 				Intent intent = new Intent(RebusActivity.this, RebusListViewer.class);
 				intent.putExtra("newRace", false);
 				startActivityForResult(intent, SELECT_FINISHED_RACES);
@@ -273,8 +274,8 @@ public class RebusActivity extends Activity {
 	 * 
 	 * @author Daniel
 	 */
-	private class ServerContactTask extends	AsyncTask<String, String, Boolean> {
-
+	protected class ServerContactTask extends AsyncTask<String, String, Boolean> {
+		
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
@@ -288,7 +289,21 @@ public class RebusActivity extends Activity {
 			if(locationFound){
 				locationFound = false;
 				
-				//TODO: update a new proximity alert
+				locationManager.removeProximityAlert(pIntent);
+				
+				Intent intent = new Intent(PROX_ALERT_INTENT);
+			    intent.putExtra("action", PROXY_REQUEST_CODE);
+			    pIntent = PendingIntent.getBroadcast(RebusActivity.this, 0, intent, 0);
+			        
+				locationManager.addProximityAlert(
+			            postLatitude, // the latitude of the central point of the alert region
+			            postLongitude, // the longitude of the central point of the alert region
+			            (float) postRadius, // the radius of the central point of the alert region, in meters
+			            PROXY_ALERT_EXPIRATION, // time for this proximity alert, in milliseconds, or -1 to indicate no expiration 
+			            pIntent // will be used to generate an Intent to fire when entry to or exit from the alert region is detected
+			    );
+			       
+			    registerReceiver(proxyReceiver, new IntentFilter(PROX_ALERT_INTENT));
 			}
 		}
 
@@ -363,8 +378,23 @@ public class RebusActivity extends Activity {
 
 				}// end catch
 			}//end if
-			return true;
-			
+			return true;	
 		}//end doInBackground()
 	}//end class ServerContactTask
+	
+	private BroadcastReceiver proxyReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO: Notification for post reached
+			nextPost();
+		}
+
+	};
+	private BroadcastReceiver alarmReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Notification for activated race
+			activateRebus();
+		}
+	};
 }

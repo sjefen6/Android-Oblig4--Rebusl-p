@@ -19,11 +19,13 @@ public class RebusReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent arg1) {
 		// TODO: Fix method to receive the intents and start the rebus if alarm goes off
 		//		or request next post if currentpost reached.
+		try{
 		Log.v("receiver", "Start of onReceive");
-
-		Log.v("receiver", "Outside of if");
-
-			if (arg1.getIntExtra("action", 0) == RebusActivity.ALARM_REQUEST_CODE) {
+		Bundle extras = arg1.getExtras();
+			if (extras.getInt("action") == RebusActivity.ALARM_REQUEST_CODE) {
+				
+			} 
+			else if (extras.getInt("action") == RebusActivity.PROXY_REQUEST_CODE) {
 				Log.v("receiver", "Inside action = alarmrequestcode");
 				NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -33,11 +35,10 @@ public class RebusReceiver extends BroadcastReceiver {
 				notification.setLatestEventInfo(context, "Proximity Alert!","You have found the post!", pendingIntent);
 
 				notificationManager.notify(NOTIFICATION_ID, notification);
-			} else if (arg1.getIntExtra("action", 0) == RebusActivity.PROXY_REQUEST_CODE) {
-
 			}
-		
-        Log.v("receiver", "end of onReceive");
+		}catch(Exception e){
+	        Log.v("receiver", e.getMessage());
+		}
 	}
 
 	private Notification createNotification() {
