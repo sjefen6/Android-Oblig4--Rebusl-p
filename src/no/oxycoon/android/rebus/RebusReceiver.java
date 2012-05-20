@@ -22,19 +22,21 @@ public class RebusReceiver extends BroadcastReceiver {
 		try{
 		Log.v("receiver", "Start of onReceive");
 		Bundle extras = arg1.getExtras();
+		
+		Log.v("receiver", extras.getInt("action") + "");
 			if (extras.getInt("action") == RebusActivity.ALARM_REQUEST_CODE) {
-				
+				Log.v("receiver", "Inside action = ALARM_REQUEST_CODE");
 			} 
 			else if (extras.getInt("action") == RebusActivity.PROXY_REQUEST_CODE) {
-				Log.v("receiver", "Inside action = alarmrequestcode");
-				NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-				PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, null, 0);
-				Notification notification = createNotification();
-
-				notification.setLatestEventInfo(context, "Proximity Alert!","You have found the post!", pendingIntent);
-
-				notificationManager.notify(NOTIFICATION_ID, notification);
+				Log.v("receiver", "Inside action = PROXY_REQUEST_CODE");
+//				NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//				PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, null, 0);
+//				Notification notification = createNotification();
+//
+//				notification.setLatestEventInfo(context, "Proximity Alert!","You have found the post!", pendingIntent);
+//
+//				notificationManager.notify(NOTIFICATION_ID, notification);
 			}
 		}catch(Exception e){
 	        Log.v("receiver", e.getMessage());
